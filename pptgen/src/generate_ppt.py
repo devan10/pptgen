@@ -19,21 +19,37 @@ from pptx.enum.shapes import MSO_SHAPE_TYPE
 
 def replace_placeholders(slide, row):
     for shape in slide.shapes:
-        if not hasattr(shape, "text"):
+        # Handle tables
+        if shape.has_table:
+            table = shape.table
+            for row_idx, table_row in enumerate(table.rows):
+                for col_idx, cell in enumerate(table_row.cells):
+                    text = cell.text
+                    for col in row.index:
+                        placeholder = "{" + str(col) + "}"
+                        if placeholder in text:
+                            val = "" if pd.isna(row[col]) else str(row[col])
+                            text = text.replace(placeholder, val)
+                    if text != cell.text:
+                        cell.text_frame.clear()
+                        cell.text_frame.text = text
+        # Handle regular shapes
+        elif not hasattr(shape, "text"):
             continue
-        text = shape.text
-        for col in row.index:
-            placeholder = "{" + str(col) + "}"
-            if placeholder in text:
-                val = "" if pd.isna(row[col]) else str(row[col])
-                text = text.replace(placeholder, val)
-        if text != shape.text:
-            try:
-                shape.text = text
-            except Exception:
-                if hasattr(shape, "text_frame"):
-                    shape.text_frame.clear()
-                    shape.text_frame.text = text
+        else:
+            text = shape.text
+            for col in row.index:
+                placeholder = "{" + str(col) + "}"
+                if placeholder in text:
+                    val = "" if pd.isna(row[col]) else str(row[col])
+                    text = text.replace(placeholder, val)
+            if text != shape.text:
+                try:
+                    shape.text = text
+                except Exception:
+                    if hasattr(shape, "text_frame"):
+                        shape.text_frame.clear()
+                        shape.text_frame.text = text
 
 
 def build_ppt(data_path, template_path, output_path, sheet=None):
