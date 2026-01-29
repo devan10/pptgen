@@ -30,69 +30,52 @@ with zipfile.ZipFile(TEMPLATE_PATH, 'r') as zip_in:
 # Load the insight template
 prs = Presentation(temp_pptx)
 
-# Remove existing slides and use Content 5 layout
+# Remove existing slides
 while len(prs.slides) > 0:
     rId = prs.slides._sldIdLst[0].rId
     prs.part.drop_rel(rId)
     del prs.slides._sldIdLst[0]
 
-# Use Content 5 layout (try multiple possible indices)
-# Content 5 might be at index 4 or 5 depending on template
-layout = None
-for layout_idx in [4, 5, 6, 1]:
-    if len(prs.slide_layouts) > layout_idx:
-        test_layout = prs.slide_layouts[layout_idx]
-        # Check if it has a body placeholder
-        has_body = False
-        for ph in test_layout.placeholders:
-            if ph.placeholder_format.type == 7:  # BODY
-                has_body = True
-                break
-        if has_body:
-            layout = test_layout
-            print(f"Using layout index {layout_idx}")
-            break
-
-if not layout:
-    layout = prs.slide_layouts[1]
-
+# Use Title and Content layout
+layout = prs.slide_layouts[1] if len(prs.slide_layouts) > 1 else prs.slide_layouts[0]
 slide = prs.slides.add_slide(layout)
 
 # Set title
 if slide.shapes.title:
     slide.shapes.title.text = "2025 Practice Revenue Summary"
 
-# Add content to the body placeholder
-for shape in slide.placeholders:
-    if shape.placeholder_format.type == 7:  # BODY placeholder
-        if shape.has_text_frame:
-            tf = shape.text_frame
-            tf.clear()
-            
-            fields = [
-                ("Total Revenue", "{Total Revenue}"),
-                ("Total Projects", "{Total Projects}"),
-                ("Total Clients", "{Total Clients}"),
-                ("Won Projects", "{Won Projects}"),
-                ("", ""),
-                ("Average Revenue per Project", "{Average Revenue per Project}"),
-                ("Total GP $", "{Total GP $}"),
-                ("Average GP %", "{Average GP %}"),
-                ("Top Client", "{Top Client}"),
-                ("Top Client Revenue", "{Top Client Revenue}"),
-            ]
-            
-            for i, (label, placeholder) in enumerate(fields):
-                if i == 0:
-                    p = tf.paragraphs[0]
-                else:
-                    p = tf.add_paragraph()
-                if label:
-                    p.text = f"{label}: {placeholder}"
-                else:
-                    p.text = ""
-                p.font.size = Pt(18)
-            break
+# Add summary data to content area via textbox (since placeholder approach isn't working)
+left = Inches(0.5)
+top = Inches(1.5)
+width = Inches(9)
+height = Inches(5)
+text_box = slide.shapes.add_textbox(left, top, width, height)
+tf = text_box.text_frame
+tf.word_wrap = True
+
+fields = [
+    ("Total Revenue", "{Total Revenue}"),
+    ("Total Projects", "{Total Projects}"),
+    ("Total Clients", "{Total Clients}"),
+    ("Won Projects", "{Won Projects}"),
+    ("", ""),
+    ("Average Revenue per Project", "{Average Revenue per Project}"),
+    ("Total GP $", "{Total GP $}"),
+    ("Average GP %", "{Average GP %}"),
+    ("Top Client", "{Top Client}"),
+    ("Top Client Revenue", "{Top Client Revenue}"),
+]
+
+for i, (label, placeholder) in enumerate(fields):
+    if i == 0:
+        p = tf.paragraphs[0]
+    else:
+        p = tf.add_paragraph()
+    if label:
+        p.text = f"{label}: {placeholder}"
+    else:
+        p.text = ""
+    p.font.size = Pt(18)
 
 prs.save(OUTPUT)
 print(f"Created: {OUTPUT}")
