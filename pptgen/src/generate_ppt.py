@@ -10,8 +10,11 @@ import os
 import shutil
 import tempfile
 import zipfile
+import copy
 import pandas as pd
 from pptx import Presentation
+from pptx.util import Inches
+from pptx.enum.shapes import MSO_SHAPE_TYPE
 
 
 def replace_placeholders(slide, row):
@@ -63,10 +66,28 @@ def build_ppt(data_path, template_path, output_path, sheet=None):
     
     try:
         prs = Presentation(actual_template)
-        layout = prs.slide_layouts[1] if len(prs.slide_layouts) > 1 else prs.slide_layouts[0]
+        
+        # Get the first slide as the template and copy it for each row
+        if len(prs.slides) == 0:
+            raise ValueError("Template has no slides")
+        
+        template_slide = prs.slides[0]
+        blank_slide_layout = prs.slide_layouts[6]  # Blank layout for copying
 
-        for _, row in df.iterrows():
-            slide = prs.slides.add_slide(layout)
+        for idx, (_, row) in enumerate(df.iterrows()):
+            if idx == 0:
+                # Use the first template slide for the first row
+                slide = template_slide
+            else:
+                # Copy the template slide's structure
+                # This is a workaround: add blank slide and copy shapes
+                slide = prs.slides.add_slide(blank_slide_layout)
+                for shape in template_slide.shapes:
+                    if shape.has_text_frame:
+                        el = shape.element
+                        newel = copy.deepcopy(el)
+                        slide.shapes._spTree.insert_element_before(newel, 'p:extLst')
+            
             replace_placeholders(slide, row)
 
         os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
