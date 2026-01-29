@@ -36,13 +36,19 @@ while len(prs.slides) > 0:
     prs.part.drop_rel(rId)
     del prs.slides._sldIdLst[0]
 
-# Use Title and Content layout
-layout = prs.slide_layouts[1] if len(prs.slide_layouts) > 1 else prs.slide_layouts[0]
+# Use Content_Small 5 layout
+layout = prs.slide_layouts[14]  # Content_Small 5
 slide = prs.slides.add_slide(layout)
 
 # Set title
 if slide.shapes.title:
     slide.shapes.title.text = "2025 Practice Revenue Summary"
+
+# Remove all placeholders except title
+for shape in list(slide.shapes):
+    if shape != slide.shapes.title and shape.is_placeholder:
+        sp = shape.element
+        sp.getparent().remove(sp)
 
 # Add summary data to content area via textbox (since placeholder approach isn't working)
 left = Inches(0.5)
