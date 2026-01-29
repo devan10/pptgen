@@ -38,7 +38,7 @@ while len(prs.slides) > 0:
     prs.part.drop_rel(rId)
     del prs.slides._sldIdLst[0]
 
-# Use Content_Small 5 layout
+# Use Content_Small 5 layout (to keep Insight template styling)
 layout = prs.slide_layouts[14]  # Content_Small 5
 slide = prs.slides.add_slide(layout)
 
@@ -52,12 +52,12 @@ for shape in list(slide.shapes):
         sp = shape.element
         sp.getparent().remove(sp)
 
-# Add table
+# Add table - adjusted for actual available space
 rows, cols = 8, 4  # Header + 7 projects, 4 columns
 left = Inches(0.5)
-top = Inches(1.2)  # Moved up
+top = Inches(1.3)
 width = Inches(9)
-height = Inches(3.2)  # Further reduced
+height = Inches(3.5)
 
 table_shape = slide.shapes.add_table(rows, cols, left, top, width, height)
 table = table_shape.table
@@ -68,9 +68,9 @@ table.columns[1].width = Inches(3)    # Project Name
 table.columns[2].width = Inches(1.5)  # Days to Sign
 table.columns[3].width = Inches(1.5)  # Revenue
 
-# Set row heights to be more compact
+# Set row heights
 for row_idx in range(rows):
-    table.rows[row_idx].height = Inches(0.38)  # Reduced further
+    table.rows[row_idx].height = Inches(0.42)
 
 # Add headers
 headers = ['Client', 'Project Name', 'Days to Sign', 'Revenue']
@@ -80,7 +80,7 @@ for col_idx, header in enumerate(headers):
     # Format header
     paragraph = cell.text_frame.paragraphs[0]
     paragraph.font.bold = True
-    paragraph.font.size = Pt(9)
+    paragraph.font.size = Pt(10)
     paragraph.font.color.rgb = RGBColor(255, 255, 255)
     # Header background color (dark blue)
     fill = cell.fill
@@ -100,7 +100,7 @@ for row_idx in range(1, rows):
         # Enable word wrap for long text
         cell.text_frame.word_wrap = True
         paragraph = cell.text_frame.paragraphs[0]
-        paragraph.font.size = Pt(8)
+        paragraph.font.size = Pt(9)
 
 prs.save(OUTPUT)
 print(f"Created: {OUTPUT}")
