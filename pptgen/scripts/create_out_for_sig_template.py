@@ -57,7 +57,7 @@ rows, cols = 8, 4  # Header + 7 projects, 4 columns
 left = Inches(0.5)
 top = Inches(1.5)
 width = Inches(9)
-height = Inches(4.5)
+height = Inches(3.8)  # Reduced from 4.5 to fit on slide
 
 table_shape = slide.shapes.add_table(rows, cols, left, top, width, height)
 table = table_shape.table
@@ -68,6 +68,10 @@ table.columns[1].width = Inches(3)    # Project Name
 table.columns[2].width = Inches(1.5)  # Days to Sign
 table.columns[3].width = Inches(1.5)  # Revenue
 
+# Set row heights to be more compact
+for row_idx in range(rows):
+    table.rows[row_idx].height = Inches(0.45)
+
 # Add headers
 headers = ['Client', 'Project Name', 'Days to Sign', 'Revenue']
 for col_idx, header in enumerate(headers):
@@ -76,7 +80,7 @@ for col_idx, header in enumerate(headers):
     # Format header
     paragraph = cell.text_frame.paragraphs[0]
     paragraph.font.bold = True
-    paragraph.font.size = Pt(12)
+    paragraph.font.size = Pt(10)
     paragraph.font.color.rgb = RGBColor(255, 255, 255)
     # Header background color (dark blue)
     fill = cell.fill
@@ -93,8 +97,10 @@ for row_idx in range(1, rows):
     # Format cells
     for col_idx in range(cols):
         cell = table.cell(row_idx, col_idx)
+        # Enable word wrap for long text
+        cell.text_frame.word_wrap = True
         paragraph = cell.text_frame.paragraphs[0]
-        paragraph.font.size = Pt(11)
+        paragraph.font.size = Pt(9)
 
 prs.save(OUTPUT)
 print(f"Created: {OUTPUT}")
