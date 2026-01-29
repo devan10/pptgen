@@ -1,0 +1,23 @@
+name: Weekly PPT Generation
+
+on:
+  schedule:
+    - cron: '0 9 * * 1' # every Monday 09:00 UTC
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        run: pip install -r pptgen/requirements.txt
+      - name: Create outputs dir
+        run: mkdir -p outputs
+      - name: Run generator
+        run: |
+          python pptgen/src/generate_ppt.py --data pptgen/data/sample_data.csv --template template.pptx --output outputs/presentation_$(date +%F).pptx
