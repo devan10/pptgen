@@ -9,7 +9,7 @@ import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data", "Practice Revenue Tracking 2025.xlsx")
-TEMPLATE = os.path.join(ROOT, "templates", "Revenue_Summary_Template.potx")
+TEMPLATE = os.path.join(ROOT, "templates", "2026_Insight_PPT_Template_Summary.potx")
 OUTPUT_DIR = os.path.join(ROOT, "out")
 OUTPUT = os.path.join(OUTPUT_DIR, "revenue_summary.pptx")
 GENERATOR = os.path.join(ROOT, "src", "generate_ppt.py")
